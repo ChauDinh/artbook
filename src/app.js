@@ -5,15 +5,16 @@ import exphbs from "express-handlebars";
 import path from "path";
 import passport from "passport";
 import session from "express-session";
-const MongoStore = require("connect-mongo")(session);
 import mongoose from "mongoose";
 
 import router from "./routes/index";
 import authRouter from "./routes/auth";
+import storyRouter from "./routes/stories";
 import { connectDB } from "./config/db";
 import MyPassportFactory from "./config/passport";
 
 connectDB();
+const MongoStore = require("connect-mongo")(session);
 
 const PORT = process.env.PORT || 3000;
 
@@ -56,6 +57,7 @@ app.use(express.static(path.join(__dirname, "public")));
 // Routes
 app.use("/api/v1", router);
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/stories", storyRouter);
 
 app.listen(PORT, () =>
   console.log(
