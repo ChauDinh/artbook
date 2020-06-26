@@ -12,6 +12,7 @@ import authRouter from "./routes/auth";
 import storyRouter from "./routes/stories";
 import { connectDB } from "./config/db";
 import MyPassportFactory from "./config/passport";
+import { formatDate, truncate, stripTags } from "./helper/hbs";
 
 connectDB();
 const MongoStore = require("connect-mongo")(session);
@@ -32,7 +33,14 @@ if (process.env.NODE_ENV === "development") {
 }
 
 // Handlebars
-app.engine(".hbs", exphbs({ extname: ".hbs", defaultLayout: "main" }));
+app.engine(
+  ".hbs",
+  exphbs({
+    helpers: { formatDate, truncate, stripTags },
+    extname: ".hbs",
+    defaultLayout: "main",
+  })
+);
 app.set("view engine", ".hbs");
 app.set("views", "./src/views");
 
