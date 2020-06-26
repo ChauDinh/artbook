@@ -5,18 +5,21 @@ import exphbs from "express-handlebars";
 import path from "path";
 import passport from "passport";
 import session from "express-session";
+const MongoStore = require("connect-mongo")(session);
+import mongoose from "mongoose";
 
 import router from "./routes/index";
 import authRouter from "./routes/auth";
 import { connectDB } from "./config/db";
+import MyPassportFactory from "./config/passport";
 
 connectDB();
 
 const PORT = process.env.PORT || 3000;
 
 // Passport config
-import Passport from "./config/passport";
-Passport(passport);
+let myPassportInstance = new MyPassportFactory(passport);
+new myPassportInstance();
 
 const app = express();
 
@@ -32,17 +35,18 @@ app.engine(".hbs", exphbs({ extname: ".hbs", defaultLayout: "main" }));
 app.set("view engine", ".hbs");
 app.set("views", "./src/views");
 
-// Sessions
+// Express Sessions
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: true },
+    // cookie: { secure: true },
+    store: new MongoStore({ mongooseConnection: mongoose.connection }),
   })
 );
 
-// Passport middleware
+// Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -50,8 +54,8 @@ app.use(passport.session());
 app.use(express.static(path.join(__dirname, "public")));
 
 // Routes
-app.use("/api/v1/", router);
-app.use("/api/v1/auth/", authRouter);
+app.use("/api/v1", router);
+app.use("/api/v1/auth", authRouter);
 
 app.listen(PORT, () =>
   console.log(
