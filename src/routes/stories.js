@@ -42,6 +42,49 @@ storyRouter.get("/public", ensureAuth, async (req, res) => {
   }
 });
 
+// desc Show full single story
+// @route GET /stories/:id
+storyRouter.get("/:id", ensureAuth, async (req, res) => {
+  try {
+    let story = await Story.findById(req.params.id).populate("user").lean();
+
+    if (!story) {
+      return res.render("error/404");
+    }
+
+    res.render("stories/detail", {
+      story,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.render("error/404");
+  }
+});
+
+// @desc Show all stories of a user
+// @route GET /stories/user/:userId
+storyRouter.get("/user/:userId", async (req, res) => {
+  try {
+    const stories = await Story.find({
+      user: req.params.userId,
+      status: "public",
+    })
+      .populate("user")
+      .lean();
+
+    if (!stories) {
+      return res.render("error/500");
+    }
+
+    res.render("stories/index", {
+      stories,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.render("error/500");
+  }
+});
+
 // @desc edit page
 // @route GET /stories/edit/:id
 storyRouter.get("/edit/:id", ensureAuth, async (req, res) => {
