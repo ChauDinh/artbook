@@ -45,41 +45,63 @@ storyRouter.get("/public", ensureAuth, async (req, res) => {
 // @desc edit page
 // @route GET /stories/edit/:id
 storyRouter.get("/edit/:id", ensureAuth, async (req, res) => {
-  const story = await Story.findOne({
-    _id: req.params.id,
-  }).lean();
+  try {
+    const story = await Story.findOne({
+      _id: req.params.id,
+    }).lean();
 
-  if (!story) {
-    return res.render("error/404");
-  }
+    if (!story) {
+      return res.render("error/404");
+    }
 
-  if (story.user.toString() !== req.user.id.toString()) {
-    res.redirect("/api/v1/stories/public");
-  } else {
-    res.render("stories/edit", {
-      story,
-    });
+    if (story.user.toString() !== req.user.id.toString()) {
+      res.redirect("/api/v1/stories/public");
+    } else {
+      res.render("stories/edit", {
+        story,
+      });
+    }
+  } catch (err) {
+    console.error(err);
+    return res.render("error/500");
   }
 });
 
 // @desc Update story
 // @route: PUT /stories/edit:id
 storyRouter.put("/edit/:id", ensureAuth, async (req, res) => {
-  let story = await Story.findById(req.params.id).lean();
+  try {
+    let story = await Story.findById(req.params.id).lean();
 
-  if (!story) {
-    return res.render("error/404");
+    if (!story) {
+      return res.render("error/404");
+    }
+
+    if (story.user.toString() !== req.user.id.toString()) {
+      res.redirect("/api/v1/stories/public");
+    } else {
+      story = await Story.findOneAndUpdate({ _id: req.params.id }, req.body, {
+        new: true,
+        runValidators: true,
+      });
+
+      res.redirect("/api/v1/dashboard");
+    }
+  } catch (err) {
+    console.error(err);
+    return res.render("error/500");
   }
+});
 
-  if (story.user.toString() !== req.user.id.toString()) {
-    res.redirect("/api/v1/stories/public");
-  } else {
-    story = await Story.findOneAndUpdate({ _id: req.params.id }, req.body, {
-      new: true,
-      runValidators: true,
-    });
-
+// @desc Delete story
+// @route DELETE /stories/delete/:id
+storyRouter.delete("/delete/:id", ensureAuth, async (req, res) => {
+  try {
+    await Story.remove({ _id: req.params.id });
     res.redirect("/api/v1/dashboard");
+  } catch (err) {
+    console.error(err);
+    return res.render("error/500");
   }
 });
 
