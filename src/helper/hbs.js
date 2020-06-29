@@ -20,4 +20,30 @@ const stripTags = (input) => {
   return input.replace(/<(?:.|\n)*?>/gm, "");
 };
 
-export { formatDate, truncate, stripTags };
+const editIcon = (storyUser, loggedUser, storyId, floating = true) => {
+  if (storyUser._id.toString() === loggedUser._id.toString()) {
+    if (floating) {
+      return `
+        <a href="/api/v1/stories/edit/${storyId}" class="btn-floating halfway-fab blue"><i class="fas fa-edit fa-small"></i></a>
+      `;
+    } else {
+      return `
+        <a href="/api/v1/stories/edit/${storyId}"><i class="fas fa-edit"></i></a>
+      `;
+    }
+  } else {
+    return "";
+  }
+};
+
+const select = (selected, options) => {
+  return options
+    .fn(this)
+    .replace(new RegExp(' value="' + selected + '"'), '$& selected="selected"')
+    .replace(
+      new RegExp(">" + selected + "</option>"),
+      ' selected="selected"$&'
+    );
+};
+
+export { formatDate, truncate, stripTags, editIcon, select };
